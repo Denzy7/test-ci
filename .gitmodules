@@ -1,0 +1,6 @@
+[submodule "mingw-ldd"]
+	path = mingw-ldd
+	url = https://github.com/xantares/mingw-ldd.git
+[submodule "ntldd"]
+	path = ntldd
+	url = https://github.com/Denzy7/ntldd

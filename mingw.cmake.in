@@ -1,0 +1,15 @@
+set(test-ci_VERSION @test-ci_VERSION@)
+set(PROJECT_BINARY_DIR @PROJECT_BINARY_DIR@)
+set(CMAKE_CROSSCOMPILING @CMAKE_CROSSCOMPILING@)
+file(GLOB exe 
+    ${CMAKE_INSTALL_PREFIX}/bin/test-ci*)
+execute_process(
+    COMMAND bash "mingw.sh" "${CMAKE_INSTALL_PREFIX}" "${test-ci_VERSION}" "${exe}" "${PROJECT_BINARY_DIR}" "${CMAKE_CROSSCOMPILING}"
+    RESULT_VARIABLE result
+)
+
+if(result)
+    message(FATAL_ERROR "mingw script failed with error code ${result}")
+else()
+    message(STATUS "mingw script completed successfully")
+endif()

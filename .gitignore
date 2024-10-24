@@ -1,0 +1,8 @@
+.cache
+venv
+*.log
+*.vim
+build/*
+*.user*
+assets/priv/*
+testspriv/*

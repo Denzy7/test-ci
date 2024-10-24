@@ -1,0 +1,64 @@
+name: CMake on multiple platforms
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: true
+      
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        build_type: [RelWithDebInfo]
+        c_compiler: [clang, x86_64-w64-mingw32-gcc ]
+        include:
+          - os: windows-latest
+            c_compiler: x86_64-w64-mingw32-gcc
+            cpp_compiler: x86_64-w64-mingw32-g++
+          - os: ubuntu-latest
+            c_compiler: clang
+            cpp_compiler: clang++
+        exclude:
+          - os: windows-latest
+            c_compiler: clang
+          - os: ubuntu-latest
+            c_compiler: x86_64-w64-mingw32-gcc
+            
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: submodules
+      run: |
+        git submodule update --init
+
+    - name: configure_linux
+      if: runner.os == 'Linux'
+      run: |
+        cmake -S . -B build/${{ matrix.os }} -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+
+    - name: configure_windows
+      if: runner.os == 'Windows'
+      run: |
+        cmake -S . -B build/${{ matrix.os }} -G 'MinGW Makefiles' -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+
+    - name: build
+      run: |
+        cmake --build build/${{ matrix.os }}
+
+
+    - name: install
+      run: |
+        cmake --install build/${{ matrix.os }} --prefix out-${{ matrix.os }}
+      shell: bash
+
+    - name: ${{ runner.os }} build
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ runner.os }}_build
+        path: out-${{ matrix.os }}
