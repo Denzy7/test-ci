@@ -73,6 +73,6 @@ jobs:
       with:
         #body_path: gitlog.txt
         draft: false
-        files: out-${{ matrix.os }}
+        files: out-${{ matrix.os }}/**
         prerelease: false
 
