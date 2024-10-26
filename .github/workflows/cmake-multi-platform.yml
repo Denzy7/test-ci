@@ -63,9 +63,9 @@ jobs:
         name: ${{ runner.os }}_build
         path: out-${{ matrix.os }}
 
-#    - name: changelog
-      #run: |
-        #git log -1 --pretty=%B > gitlog.txt
+    - name: changelog
+      run: |
+        git log -1 --pretty=%B > gitlog.txt
 
     - name: Release
       uses: softprops/action-gh-release@v2
@@ -73,6 +73,6 @@ jobs:
       with:
         #body_path: gitlog.txt
         draft: false
-        files: out-${{ matrix.os }}/**
+        files: gitlog.txt
         prerelease: false
 
