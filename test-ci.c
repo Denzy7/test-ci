@@ -5,7 +5,7 @@ void* thr(void* arg)
 {
     printf("waiting. press enter\n");
     getchar();
-    printf("exiting...\n");
+    printf("exiting... \n");
     return NULL;
 }
 
