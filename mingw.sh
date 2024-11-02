@@ -10,6 +10,7 @@ grepstr="not found|system32|winsxs|linux-vdso|ld-linux"
 sedstr="s/(0x[0-9a-fA-F]*)//g"
 sedstr2="s/.*=> //g"
 
+
 echo "info: p:$prefix v:$ver e:$exe d:$dir x:$xcompile"
 
 if [ -n "$ldd" ] && [ "$xcompile" != "TRUE" ]; then
