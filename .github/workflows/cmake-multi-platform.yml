@@ -95,12 +95,8 @@ jobs:
           zip -r msys2_build.zip msys2_build
           zip -r linux_build.zip linux_build
 
-      - name: Display structure of downloaded files
-        run: ls -lah
-
       - name: Release
         uses: softprops/action-gh-release@v2
-        if: startsWith(github.ref, 'refs/tags/')
         with:
           files: |
             linux_build.zip
