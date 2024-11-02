@@ -5,87 +5,83 @@ on:
     branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
-permissions:
-  contents: write
+#permissions:
+  #contents: write
 jobs:
-  build:
-    runs-on: ${{ matrix.os }}
-
+  build_linux:
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: true
-      
-      matrix:
-        os: [ubuntu-latest, windows-latest]
-        build_type: [RelWithDebInfo]
-        c_compiler: [clang, x86_64-w64-mingw32-gcc ]
-        include:
-          - os: windows-latest
-            c_compiler: x86_64-w64-mingw32-gcc
-            cpp_compiler: x86_64-w64-mingw32-g++
-          - os: ubuntu-latest
-            c_compiler: clang
-            cpp_compiler: clang++
-        exclude:
-          - os: windows-latest
-            c_compiler: clang
-          - os: ubuntu-latest
-            c_compiler: x86_64-w64-mingw32-gcc
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: submodules
+        run: |
+          git submodule update --init --depth 1
+
+      - name: linux setup and dependencies
+        run: |
+          sudo apt update
+          sudo apt -y install libgtk-3-dev pkgconf
+
+      - name: configure linux
+        run: |
+          cmake -S . -B build/linux -DCMAKE_BUILD_TYPE=RelWithDebInfo
+
+      - name: build linux
+        run: |
+          cmake --build build/linux -j$(nproc)
+
+      - name: install linux
+        run: |
+          cmake --install build/linux --prefix out-linux
+
+      - name: linux build
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux_build
+          path: out-linux
+
+  build_msys2:
+    runs-on: windows-latest
+    strategy:
+      fail-fast: true
+    defaults:
+      run:
+        shell: msys2 {0}
             
     steps:
-    - uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
-    - name: submodules
-      run: |
-        git submodule update --init
+      - uses: msys2/setup-msys2@v2
+        with:
+          msystem: UCRT64
+          update: true
 
+      - name: msys2 setup and dependencies
+        run: |
+          pacman --noconfirm -S pactoys git
+          pacboy --noconfirm -S gcc cmake gtk3 
 
-    - name: dependencies_linux
-      if: runner.os == 'Linux'
-      run: |
-        sudo apt update && sudo apt -y install libgtk-3-dev pkgconf
-      shell: bash
+      - name: submodules
+        run: |
+          git submodule update --init --depth 1
 
-    - name: dependencies_mingw
-      if: runner.os == 'Windows'
-      run: |
-        export PATH="$PATH:/c/mingw64/bin"
-        pacman --help
-      shell: bash
+      - name: configure msys2
+        run: |
+          cmake -S . -B build/msys2 -DCMAKE_BUILD_TYPE=RelWithDebInfo
 
-    - name: configure_linux
-      if: runner.os == 'Linux'
-      run: |
-        cmake -S . -B build/${{ matrix.os }} -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+      - name: build msys2
+        run: |
+          cmake --build build/msys2 -j$(nproc)
 
-    - name: configure_windows
-      if: runner.os == 'Windows'
-      run: |
-        cmake -S . -B build/${{ matrix.os }} -G 'MinGW Makefiles' -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+      - name: install msys2
+        run: |
+          cmake --install build/msys2 --prefix out-msys2
 
-    - name: build
-      run: |
-        cmake --build build/${{ matrix.os }}
-
-
-    - name: install
-      run: |
-        cmake --install build/${{ matrix.os }} --prefix out-${{ matrix.os }}
-      shell: bash
-
-    - name: ${{ runner.os }} build
-      uses: actions/upload-artifact@v4
-      with:
-        name: ${{ runner.os }}_build
-        path: out-${{ matrix.os }}
-
-    - name: zip output
-      shell: bash
-      run: |
-        7z a ${{ matrix.os }}.7z out-${{ matrix.os }}/**
-        ls -lah
-
-    - name: Release
-      uses: softprops/action-gh-release@v2
-      if: startsWith(github.ref, 'refs/tags/')
-      with:
-        files: ${{ matrix.os }}.7z
+      - name: msys2 build
+        uses: actions/upload-artifact@v4
+        with:
+          name: msys2_build
+          path: out-msys2

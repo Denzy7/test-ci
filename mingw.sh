@@ -4,6 +4,18 @@ ver="$2"
 exe="$3"
 dir="$(echo "$exe" | sed 's:[/\\][^/\\]*$::')"
 projbindir="$4"
+ldd=$(command -v ldd)
+
+if [ -n "$ldd" ]; then
+    echo "using system ldd"
+    "$ldd" "$exe" |  grep -Evi "not found|system32|linux-vdso|ld-linux" | sed 's/(0x[0-9a-fA-F]*)//g' | sed 's/.*=> //g' | while read -r file; do
+    if [[ -f "$file" ]]; then
+        cp "$file" "$dir"
+        echo "Copied $file"
+    fi
+done
+    exit 0
+fi
 
 python3 -m venv venv
 
