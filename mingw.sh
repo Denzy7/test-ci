@@ -2,13 +2,19 @@
 prefix="$1"
 ver="$2"
 exe="$3"
-dir="$(echo "$exe" | sed 's:[/\\][^/\\]*$::')"
 projbindir="$4"
+xcompile="$5"
+dir="$(echo "$exe" | sed 's:[/\\][^/\\]*$::')"
 ldd=$(command -v ldd)
+grepstr="not found|system32|winsxs|linux-vdso|ld-linux"
+sedstr="s/(0x[0-9a-fA-F]*)//g"
+sedstr2="s/.*=> //g"
 
-if [ -n "$ldd" ]; then
+echo "info: p:$prefix v:$ver e:$exe d:$dir x:$xcompile"
+
+if [ -n "$ldd" ] && [ "$xcompile" != "TRUE" ]; then
     echo "using system ldd"
-    "$ldd" "$exe" |  grep -Evi "not found|system32|linux-vdso|ld-linux" | sed 's/(0x[0-9a-fA-F]*)//g' | sed 's/.*=> //g' | while read -r file; do
+    "$ldd" "$exe" |  grep -Evi "$grepstr" | sed "$sedstr" | sed "$sedstr2" | while read -r file; do
     if [[ -f "$file" ]]; then
         cp "$file" "$dir"
         echo "Copied $file"
@@ -30,12 +36,11 @@ else
     exit 1
 fi
 
-echo "info: p:$prefix v:$ver e:$exe d:$dir"
 "$pip" install pefile
 echo "using mingw-ldd"
 "$python" mingw-ldd/mingw-ldd.py "$exe"
 
-"$python" mingw-ldd/mingw-ldd.py "$exe" |  grep -Evi "not found|system32|linux-vdso|ld-linux" | sed 's/(0x[0-9a-fA-F]*)//g' | sed 's/.*=> //g' | while read -r file; do
+"$python" mingw-ldd/mingw-ldd.py "$exe" | grep -Evi "$grepstr" | sed "$sedstr" | sed "$sedstr2" | while read -r file; do
     if [[ -f "$file" ]]; then
         cp "$file" "$dir"
         echo "Copied $file"
@@ -46,13 +51,13 @@ done
 
 # special case ntldd depends on libssp
 if [[ -f "$projbindir/ntldd/ntldd.exe" ]];then
-    "$python" mingw-ldd/mingw-ldd.py "$projbindir/ntldd/ntldd.exe" | grep -Evi "not found|system32|linux-vdso|ld-linux" | sed 's/(0x[0-9a-fA-F]*)//g' | sed 's/.*=> //g' | while read -r file; do
+    "$python" mingw-ldd/mingw-ldd.py "$projbindir/ntldd/ntldd.exe" | grep -Evi "$grepstr" | sed "$sedstr" | sed "$sedstr2" | while read -r file; do
     if [[ -f "$file" ]]; then
         cp "$file" "$projbindir/ntldd"
     fi
 done
     echo "using ntldd"
-    "$projbindir/ntldd/ntldd.exe" "$exe" | grep -Evi "not found|system32|linux-vdso|ld-linux" | sed 's/(0x[0-9a-fA-F]*)//g' | sed 's/.*=> //g' | while read -r file; do
+    "$projbindir/ntldd/ntldd.exe" "$exe" | grep -Evi "$grepstr" | sed "$sedstr" | sed "$sedstr2" | while read -r file; do
     if [[ -f "$file" ]]; then
         cp "$file" "$dir"
         echo "Copied $file"
