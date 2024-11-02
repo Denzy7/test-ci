@@ -11,7 +11,7 @@ static void on_button_clicked(GtkWidget *widget, gpointer data) {
                                     GTK_DIALOG_DESTROY_WITH_PARENT,
                                     GTK_MESSAGE_INFO,
                                     GTK_BUTTONS_OK,
-                                    "Hello, this is a message box!");
+                                    "Hello, this is a message box");
 
     // Show the dialog and wait for a response
     gtk_dialog_run(GTK_DIALOG(dialog));
