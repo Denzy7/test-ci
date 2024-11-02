@@ -9,7 +9,7 @@ permissions:
   contents: write
 jobs:
   build_linux:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     strategy:
       fail-fast: true
 
@@ -44,7 +44,7 @@ jobs:
           path: out-linux
 
   build_msys2:
-    runs-on: windows-latest
+    runs-on: windows-2019
     strategy:
       fail-fast: true
     defaults:
@@ -83,11 +83,12 @@ jobs:
           path: out-msys2
 
   release:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     needs: [build_msys2 , build_linux]
     strategy:
       fail-fast: true
     steps:
+      - uses: actions/checkout@v3
       - uses: actions/download-artifact@v4
 
       - name: zip 
@@ -101,3 +102,4 @@ jobs:
           files: |
             linux_build.zip
             msys2_build.zip
+
