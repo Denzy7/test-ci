@@ -58,11 +58,7 @@ jobs:
         with:
           msystem: UCRT64
           update: true
-
-      - name: msys2 setup and dependencies
-        run: |
-          pacman --noconfirm -S pactoys git
-          pacboy --noconfirm -S gcc cmake gtk3 
+          install: git mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-cmake mingw-w64-ucrt-x86_64-gtk3
 
       - name: submodules
         run: |
