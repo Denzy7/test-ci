@@ -1,0 +1,32 @@
+name: Release
+
+on:
+  workflow_run:
+    workflows: ["CMake on multiple platforms"]
+    types:
+      - completed
+permissions:
+  contents: write
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    strategy:
+      fail-fast: true
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ github.token }}
+
+      - name: zip 
+        run: |
+          zip -r msys2_build.zip msys2_build
+          zip -r linux_build.zip linux_build
+
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            linux_build.zip
+            msys2_build.zip
