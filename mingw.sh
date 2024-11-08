@@ -11,7 +11,7 @@ sedstr="s/(0x[0-9a-fA-F]*)//g"
 sedstr2="s/.*=> //g"
 
 
-echo "info: p:$prefix v:$ver e:$exe d:$dir x:$xcompile"
+echo "info: p:$prefix v:$ver e:$exe d:$dir x:$xcompile ldd:$ldd"
 
 if [ -n "$ldd" ] && [ "$xcompile" != "TRUE" ]; then
     echo "using system ldd"
