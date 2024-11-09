@@ -15,6 +15,7 @@ target_link_libraries(gtk PRIVATE ${GTK3_LIBRARIES})
 install(TARGETS test-ci gtk DESTINATION bin)
 if(MINGW)
     add_subdirectory(ntldd)
+    set(exe gtk)
     configure_file(mingw.cmake.in mingw.cmake @ONLY)
 
     install(SCRIPT ${CMAKE_CURRENT_BINARY_DIR}/mingw.cmake)

@@ -57,7 +57,7 @@ jobs:
         with:
           msystem: UCRT64
           update: true
-          install: git mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-cmake mingw-w64-ucrt-x86_64-gtk3
+          install: git mingw-w64-ucrt-x86_64-toolchain base-devel mingw-w64-ucrt-x86_64-cmake mingw-w64-ucrt-x86_64-gtk3
 
       - name: submodules
         run: |
