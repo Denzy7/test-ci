@@ -7,6 +7,7 @@ void* thr(void* arg)
     getchar();
     printf("exiting...\n");
     printf("exiting...\n");
+    printf("exiting...\n");
     return NULL;
 }
 
