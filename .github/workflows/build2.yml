@@ -35,7 +35,7 @@ jobs:
         with:
           msystem: UCRT64
           update: true
-          install: git mingw-w64-ucrt-x86_64-toolchain base-devel mingw-w64-ucrt-x86_64-cmake mingw-w64-ucrt-x86_64-gtk3
+          install: git mingw-w64-ucrt-x86_64-toolchain base-devel mingw-w64-ucrt-x86_64-cmake mingw-w64-ucrt-x86_64-gtk3 zip
 
       - name: linux setup and dependencies
         if: runner.os == 'Linux'
@@ -55,11 +55,16 @@ jobs:
         run: |
           cmake --install build/${{ runner.os }}  --prefix out-${{ runner.os }} 
 
+      - name: zip ${{ runner.os }} build
+        run: |
+          zip -r ${{runner.os}}.zip out-${{ runner.os }}
+
       - name: upload install artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ runner.os }} build
-          path: out-${{ runner.os }}
+          name: ${{ runner.os }}_build
+          path: ${{runner.os}}.zip
+
   release:
     needs: build
     if: startsWith(github.ref, 'refs/tags/')
@@ -72,8 +77,15 @@ jobs:
         with:
           path: rel
 
+      - name: github sha
+        run: |
+          echo ${{ github.sha }} > github.sha
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: rel/**
+          files: |
+            rel/**
+            github.sha
+
 
