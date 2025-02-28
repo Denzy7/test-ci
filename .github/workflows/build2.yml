@@ -1,0 +1,75 @@
+name: Build and Release
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - "v*.*.*"
+  pull_request:
+  workflow_dispatch:
+jobs:
+  build:
+    strategy:
+      fail-fast: true
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: ${{ runner.os == 'Windows' && 'msys2 {0}' || 'bash' }}
+
+    steps:
+      - name: Echo Current OS
+        run: echo "Running on ${{ runner.os }}"
+
+      - name: checkout
+        uses: actions/checkout@v4
+
+      - name: msys2 setup
+      - uses: msys2/setup-msys2@v2
+        if: runner.os == 'Windows'
+        with:
+          msystem: UCRT64
+          update: true
+          install: git mingw-w64-ucrt-x86_64-toolchain base-devel mingw-w64-ucrt-x86_64-cmake mingw-w64-ucrt-x86_64-gtk3
+
+      - name: linux setup and dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt update
+          sudo apt -y install libgtk-3-dev pkgconf
+
+
+      - name: configure ${{ runner.os }}
+        run: |
+          cmake -S . -B build/${{ runner.os }} -DCMAKE_BUILD_TYPE=RelWithDebInfo
+
+      - name: build ${{ runner.os }} 
+        run: |
+          cmake --build build/${{ runner.os }}  -j$(nproc)
+
+      - name: install ${{ runner.os }} 
+        run: |
+          cmake --install build/${{ runner.os }}  --prefix out-${{ runner.os }} 
+
+      - name: upload install artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ runner.os }} build
+          path: out-${{ runner.os }}
+  release:
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    steps:
+      - name: download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: rel
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: rel/**
+
