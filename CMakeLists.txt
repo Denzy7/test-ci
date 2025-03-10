@@ -13,6 +13,7 @@ add_executable(gtk
 target_include_directories(gtk PRIVATE ${GTK3_INCLUDE_DIRS})
 target_link_libraries(gtk PRIVATE ${GTK3_LIBRARIES})
 install(TARGETS test-ci gtk DESTINATION bin)
+message(${CMAKE_SYSTEM_PREFIX_PATH})
 if(MINGW)
     add_subdirectory(ntldd)
     set(exe gtk)
